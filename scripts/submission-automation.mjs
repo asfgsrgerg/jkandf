@@ -85,6 +85,10 @@ function escapeForRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function sanitizeMarkdownText(value) {
+  return value.replace(/[[\]()<>`]/g, "");
+}
+
 function extractSection(body, heading) {
   const normalizedBody = normalizeLineEndings(body);
   const pattern = new RegExp(
@@ -213,14 +217,18 @@ export function parseSubmissionIssueBody(body) {
 export function applySubmissionToReadmes({ readmeZh, readmeEn, submission }) {
   const repositoryUrl = normalizeRepositoryUrl(submission.repositoryUrl);
   const zhEntry = {
-    name: collapseWhitespace(submission.projectNameZh),
+    name: sanitizeMarkdownText(collapseWhitespace(submission.projectNameZh)),
     url: repositoryUrl,
-    description: ensureTerminalPunctuation(submission.descriptionZh, "zh"),
+    description: sanitizeMarkdownText(
+      ensureTerminalPunctuation(submission.descriptionZh, "zh"),
+    ),
   };
   const enEntry = {
-    name: collapseWhitespace(submission.projectNameEn),
+    name: sanitizeMarkdownText(collapseWhitespace(submission.projectNameEn)),
     url: repositoryUrl,
-    description: ensureTerminalPunctuation(submission.descriptionEn, "en"),
+    description: sanitizeMarkdownText(
+      ensureTerminalPunctuation(submission.descriptionEn, "en"),
+    ),
   };
 
   const updatedZh = updateReadmeSection(
